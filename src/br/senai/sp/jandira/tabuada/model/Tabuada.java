@@ -4,9 +4,9 @@ import java.util.Scanner;
 
 public class Tabuada {
 
-    int multiplicando;
-    int multiplicadorInicial;
-    int multiplicadorFinal;
+    public int multiplicando;
+    public int multiplicadorInicial;
+    public int multiplicadorFinal;
     String [] tabuada;
 
     public void obterDados() {
@@ -21,10 +21,10 @@ public class Tabuada {
         System.out.print("Qual o valor do multiplicador final? ");
         multiplicadorFinal = leitor.nextInt();
 
-        corrigirOrdemValores();
+        calcularTabuada();
     }
 
-    public void corrigirOrdemValores() {
+    public String[] calcularTabuada() {
         int troca;
 
         if (multiplicadorInicial > multiplicadorFinal) {
@@ -33,10 +33,6 @@ public class Tabuada {
             multiplicadorFinal = troca;
         }
 
-        calcularTabuada();
-    }
-
-    public void calcularTabuada() {
         int tamanho = multiplicadorFinal - multiplicadorInicial + 1;
         tabuada = new String[tamanho];
 
@@ -48,7 +44,8 @@ public class Tabuada {
             i++;
         }
 
-        exibirTabuada();
+        return tabuada;
+        //exibirTabuada();
     }
 
     public void exibirTabuada() {

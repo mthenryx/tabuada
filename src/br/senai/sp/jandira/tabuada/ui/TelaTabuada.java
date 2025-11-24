@@ -1,23 +1,29 @@
 package br.senai.sp.jandira.tabuada.ui;
 
+import br.senai.sp.jandira.tabuada.model.Tabuada;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class TelaTabuada extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
         // Definir o tamanho da tela
-        stage.setWidth(500);
-        stage.setHeight(500);
         stage.setResizable(false);
         stage.setTitle("Tabuada");
 
@@ -29,21 +35,25 @@ public class TelaTabuada extends Application {
 
         // Criar o header da tela
         VBox header = new VBox();
-        header.setPrefHeight(100);
         header.setStyle("-fx-background-color: #a5a5a5");
 
         // Colocar o conteúdo do header
         Label labelTitulo = new Label("Tabuada");
-        labelTitulo.setStyle("-fx-text-fill: white;-fx-font-size: 20;-fx-font-weight: bold");
+        labelTitulo.setPadding(new Insets(8, 8, 0, 8));
+        labelTitulo.setStyle("-fx-text-fill: white;-fx-font-size: 30;-fx-font-weight: bold");
+
         Label labelSubtitulo = new Label("Crie a sua tabuada que sua imaginação mandar.");
+        labelSubtitulo.setPadding(new Insets(0, 8, 8, 8));
+        labelSubtitulo.setStyle("-fx-text-fill: white");
 
         // Colocar os Labels dentro do header
         header.getChildren().addAll(labelTitulo, labelSubtitulo);
 
         // Criar o grid de formulário
         GridPane gridFormulario = new GridPane();
-        gridFormulario.setPrefHeight(100);
-        gridFormulario.setStyle("-fx-background-color: #ca0000;");
+        gridFormulario.setVgap(10);
+        gridFormulario.setHgap(10);
+        gridFormulario.setPadding(new Insets(16, 8, 16, 8));
 
         // Criar o conteúdo do gridFormulario
         Label labelMultiplicando = new Label("Multiplicando:");
@@ -63,9 +73,12 @@ public class TelaTabuada extends Application {
         gridFormulario.add(textFieldMaiorMultiplicador, 1, 2);
 
         // Criar a caixa dos botões
+        Pane paneButtons = new Pane();
+
         HBox boxBotoes = new HBox();
-        boxBotoes.setPrefHeight(100);
-        boxBotoes.setStyle("-fx-background-color: #000000;");
+        boxBotoes.setPadding(new Insets(8));
+        boxBotoes.setSpacing(10);
+        paneButtons.getChildren().add(boxBotoes);
 
         // Criar os botões
         Button btCalcular = new Button("Calcular Media");
@@ -85,12 +98,14 @@ public class TelaTabuada extends Application {
 
         // Criar a caixa de resultado
         VBox boxResultado = new VBox();
-        boxResultado.setPrefHeight(100);
-        boxResultado.setStyle("-fx-background-color: #ffffff;");
+        boxResultado.setPrefHeight(300);
 
         // Criar os componentes da boxResultado
         Label labelResultado = new Label("Resultado:");
+        labelResultado.setPadding(new Insets(8, 8, 8, 8));
+        labelResultado.setStyle("-fx-text-fill: #ca0000;-fx-font-size: 18;");
         ListView listaTabuada = new ListView();
+        listaTabuada.setPadding(new Insets(8));
 
         // Adicionar os componentes na boxResultado
         boxResultado.getChildren().addAll(labelResultado, listaTabuada);
@@ -98,14 +113,59 @@ public class TelaTabuada extends Application {
         // Adicionar componentes ao root
         root.getChildren().add(header);
         root.getChildren().add(gridFormulario);
-        root.getChildren().add(boxBotoes);
+        root.getChildren().add(paneButtons);
         root.getChildren().add(boxResultado);
 
         // Colocamos a cena no palco
         stage.setScene(scene);
 
         stage.show();
-    }
 
+        // Configurando clique dos botões
+        btCalcular.setOnAction(e -> {
+            Tabuada tabuada = new Tabuada();
+
+            tabuada.multiplicando =
+                    Integer.parseInt(textFieldMultiplicando.getText());
+
+            tabuada.multiplicadorInicial =
+                    Integer.parseInt(textFieldMenorMultiplicador.getText());
+
+            tabuada.multiplicadorFinal =
+                    Integer.parseInt(textFieldMaiorMultiplicador.getText());
+
+            String[] resultado = tabuada.calcularTabuada();
+            listaTabuada.getItems().addAll(resultado);
+
+            // gravar os dados da tabuada em arquivo
+            Path arquivo = Path.of("C:\\Users\\25204051\\ds1t\\tabuada\\dados_tabuada.csv");
+
+            String dados = textFieldMultiplicando.getText() + ";" + textFieldMenorMultiplicador.getText() + ";" + textFieldMaiorMultiplicador.getText() + ";" + LocalDateTime.now() + "\n";
+
+            try {
+                Files.writeString(arquivo, dados, StandardOpenOption.APPEND);
+            } catch (IOException erro) {
+                System.out.println(erro.getMessage());
+            }
+
+        });
+
+        btLimpar.setOnAction(e -> {
+            textFieldMultiplicando.clear();
+            textFieldMenorMultiplicador.clear();
+            textFieldMaiorMultiplicador.clear();
+            listaTabuada.getItems().clear();
+            textFieldMultiplicando.requestFocus();
+        });
+
+        btSair.setOnAction(e -> {
+            Alert alerta = new Alert(Alert.AlertType.CONFIRMATION, "Sair do programa?", ButtonType.YES, ButtonType.NO);
+            Optional<ButtonType> resposta = alerta.showAndWait();
+
+            if (resposta.get() == ButtonType.YES) {
+                System.exit(0);
+            }
+        });
+    }
 }
 
